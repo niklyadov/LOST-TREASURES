@@ -4,13 +4,16 @@ using UnityEngine.Networking;
 
 public class Submarine : NetworkBehaviour
 {
-    public Camera Camera;
     private SubmarineMovement _movement;
     private SubmarinePickup _pickup;
+    private SubmarineHealth _health;
+    
     private NetworkIdentity _networkIdentity;
     private Rigidbody _rigidbody;
-    
-    private float hp = 1000;
+
+    [SerializeField]
+    public Transform cameraPoint;
+
     private string _info;
 
     private void Awake()
@@ -20,6 +23,9 @@ public class Submarine : NetworkBehaviour
         _pickup = GetComponent<SubmarinePickup>();
         _pickup.droppedTreasure += DroppedTreasure;
         _pickup.pickedUpTreasure += PickedUpTreasure;
+
+        _health = GetComponent<SubmarineHealth>();
+        
         _rigidbody = GetComponent<Rigidbody>();
         
         _networkIdentity = GetComponent<NetworkIdentity>();
@@ -65,11 +71,17 @@ public class Submarine : NetworkBehaviour
     {
         if (_networkIdentity.isLocalPlayer)
         {
-            Camera.enabled = true;
+            // Spawn camera
+            var mainCamera = new GameObject("PlayerCamera");
+                mainCamera.AddComponent<Camera>();
+                
+            var cameraFollow = mainCamera.AddComponent<CameraFollow>();
+                cameraFollow.targetFollow = cameraPoint;
+                cameraFollow.targetLook = transform;
         }
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
         if (_networkIdentity.isLocalPlayer && Input.anyKey)
             TakeControl();
@@ -100,26 +112,6 @@ public class Submarine : NetworkBehaviour
         _pickup.pickedUpTreasure = null;
     }
 
-    public void HitWithOtherSubmarine(Submarine other, float otherSpeed)
-    {
-        var localSpeed = _rigidbody.velocity.magnitude;
-        var diffSpeed = Mathf.Abs(otherSpeed - localSpeed);
-
-        _info += localSpeed + ", " ;
-
-        hp -= localSpeed * 10;
-
-        if (otherSpeed > localSpeed)
-        {
-            if (_pickup.Treasure != null)
-            {
-                _info += " you lost a treasure  ";
-                _pickup.Treasure.Drop();
-                _pickup.droppedTreasure(_pickup.Treasure);
-            }
-        }
-    }
-
     private void OnCollisionEnter(Collision other)
     {
         if (!_networkIdentity.isLocalPlayer)
@@ -128,22 +120,28 @@ public class Submarine : NetworkBehaviour
         var submarine = other.gameObject.GetComponent<Submarine>();
         if (submarine == null)
             return;
-        
-        var rb = submarine.gameObject.GetComponent<Rigidbody>();
 
-        var otherSpeed = rb.velocity.magnitude;
-        hp -= otherSpeed * 10;
+        var magnitude = other.impulse.magnitude;
+        _info += $" m: {magnitude} ;  ";
         
-        var localSpeed = _rigidbody.velocity.magnitude;
+        CmdSubmarineCollision(submarine.GetComponent<NetworkIdentity>().netId, magnitude);
+    }
 
-        if (localSpeed < otherSpeed)
+    [Command]
+    private void CmdSubmarineCollision(NetworkInstanceId idNum, float magnitude)
+    {
+        var submarine = ClientScene.FindLocalObject(idNum);
+            submarine.GetComponent<SubmarineHealth>().TakeDamage(magnitude * 5);
+            var pickup = submarine.GetComponent<SubmarinePickup>();
+            
+        if (magnitude > 0.6f) 
         {
-            if (_pickup.Treasure != null)
+            // lost treasure
+            if (pickup.Treasure != null)
             {
-                _info += " you lost a treasure  ";
-                _pickup.Treasure.Drop();
-                _pickup.droppedTreasure(_pickup.Treasure);
-            }   
+                pickup.Treasure.Drop();
+                pickup.droppedTreasure(pickup.Treasure);
+            } 
         }
     }
 
@@ -152,6 +150,6 @@ public class Submarine : NetworkBehaviour
         if (!isLocalPlayer)
             return;
         
-        GUI.Label(new Rect(0,0, Screen.width, 500), $"Hp:    {hp},     ");
+        GUI.Label(new Rect(0,0, Screen.width, 500), $"Hp:    {_health.CurrentHealth},     {_info}");
     }
 }

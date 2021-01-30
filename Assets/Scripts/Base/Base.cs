@@ -1,18 +1,50 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Base : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    public Team Team;
+    
+    //private List<Treasure> _treasures = new List<Treasure>();
+    
+    [SerializeField]
+    private int _totalCost = 0;
+
+    public int TotalCost
     {
-        
+        get => _totalCost;
     }
 
-    // Update is called once per frame
-    void Update()
+    private void OnTriggerEnter(Collider other)
     {
+        var treasure = other.GetComponent<Treasure>();
         
+        if (treasure == null)
+            return;
+        
+        if (treasure.Owner != null)
+            return;
+        
+        //_treasures.Add(treasure);
+        _totalCost += treasure.Price;
+        Destroy(treasure.gameObject);
     }
+    
+    /* TODO: кража ресурсов
+     * private void OnTriggerExit(Collider other)
+    {
+        var treasure = other.GetComponent<Treasure>();
+        
+        if (treasure == null)
+            return;
+        
+        if (treasure.Owner != null)
+            return;
+
+        _treasures.Remove(treasure);
+        _totalCost -= treasure.Price;
+    }
+     */
 }

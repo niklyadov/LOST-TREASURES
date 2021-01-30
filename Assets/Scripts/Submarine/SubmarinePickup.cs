@@ -12,9 +12,8 @@ public class SubmarinePickup : MonoBehaviour
     private Transform _treasureSpawnPoint;
     
     private Transform _transform;
-    
-    [SerializeField]
-    private float _pickupTimer;
+
+    [SerializeField] private float _pickupTimer;
 
     public UnityAction<Treasure> pickedUpTreasure;
     public UnityAction<Treasure> droppedTreasure;
@@ -27,6 +26,11 @@ public class SubmarinePickup : MonoBehaviour
     private float _updateTimeout;
 
     #endregion
+
+    private void UpdatePercentage()
+    {
+        GameController.GetInstance().OverlayUi.SetActionPercentage(_pickupTimer / timeForPickup);
+    }
 
     private void Awake()
     {
@@ -53,7 +57,12 @@ public class SubmarinePickup : MonoBehaviour
         if (Input.GetKeyUp(KeyCode.Space))
         {
             _pressed = false;
+            GameController.GetInstance().OverlayUi.SetActionPercentage(0);
+            
             _pickupTimer = 0;
+            
+            UpdatePercentage();
+            
             return;
         }
 
@@ -71,6 +80,9 @@ public class SubmarinePickup : MonoBehaviour
                         if (_pickupTimer < timeForPickup)
                         {
                             _pickupTimer += updateTimeout;
+                            
+                            UpdatePercentage();
+                            
                             return;
                         }
                         
@@ -79,6 +91,7 @@ public class SubmarinePickup : MonoBehaviour
                         treasure.Pickup(gameObject);
 
                         _pickupTimer = 0;
+                        UpdatePercentage();
                         return;   
                     }
                 }
@@ -86,6 +99,9 @@ public class SubmarinePickup : MonoBehaviour
                 if (_pickupTimer > 0)
                 {
                     _pickupTimer -= updateTimeout * 2;
+                    
+                    UpdatePercentage();
+                    
                 }
             }
             
