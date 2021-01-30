@@ -4,11 +4,11 @@ using UnityEngine;
 
 public class SubmarineSounds : MonoBehaviour
 {
-    public AudioClip shot;
-    public AudioClip move;
-    public AudioClip chest;
-    public AudioClip pickup;
-    AudioSource audio;
+    [SerializeField] private AudioClip shot;
+    [SerializeField] private AudioClip move;
+    [SerializeField] private AudioClip chest;
+    [SerializeField] private AudioClip pickup;
+    [SerializeField] AudioSource audio;
     bool lastW = false;
     
     // Start is called before the first frame update
@@ -37,7 +37,7 @@ public class SubmarineSounds : MonoBehaviour
         }
     }
 
-    void PlaySoundCol(float force, float maxForce){
+    public void PlaySoundCol(float force, float maxForce) {
         float volume = 1;
 
         if (force <= maxForce)
@@ -48,11 +48,11 @@ public class SubmarineSounds : MonoBehaviour
         audio.PlayOneShot(shot, volume);
     }
 
-    void PlayChestSound(){
+    public void PlayChestSound(){
         audio.PlayOneShot(chest);
     }
 
-    void PlayPickupSound(){
+    public void PlayPickupSound(){
         audio.PlayOneShot(pickup);
     }
 }

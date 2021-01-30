@@ -29,6 +29,14 @@ public class Base : MonoBehaviour
         
         //_treasures.Add(treasure);
         _totalCost += treasure.Price;
+
+        var controller = GameController.GetInstance();
+        
+        if (Team == Team.Blue)
+            controller.BlueTeamScore += treasure.Price;
+        else
+            controller.RedTeamScore += treasure.Price;
+        
         Destroy(treasure.gameObject);
     }
     

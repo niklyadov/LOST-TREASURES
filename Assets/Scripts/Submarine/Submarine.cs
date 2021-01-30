@@ -7,14 +7,18 @@ public class Submarine : NetworkBehaviour
     private SubmarineMovement _movement;
     private SubmarinePickup _pickup;
     private SubmarineHealth _health;
+    private SubmarineSounds _sounds;
     
     private NetworkIdentity _networkIdentity;
     private Rigidbody _rigidbody;
+    private Team? _team = null;
 
     [SerializeField]
     public Transform cameraPoint;
 
     private string _info;
+
+    private Transform _spawnPoint;
 
     private void Awake()
     {
@@ -25,6 +29,7 @@ public class Submarine : NetworkBehaviour
         _pickup.pickedUpTreasure += PickedUpTreasure;
 
         _health = GetComponent<SubmarineHealth>();
+        _sounds = GetComponent<SubmarineSounds>();
         
         _rigidbody = GetComponent<Rigidbody>();
         
@@ -61,6 +66,9 @@ public class Submarine : NetworkBehaviour
     
     private void PickedUpTreasure(Treasure treasure)
     {
+        
+        _sounds.PlayPickupSound();
+        
         if (_networkIdentity.isLocalPlayer && treasure.Owner == null)
             CmdSetParent(treasure.gameObject.GetComponent<NetworkIdentity>().netId);
     }    
@@ -74,10 +82,17 @@ public class Submarine : NetworkBehaviour
             // Spawn camera
             var mainCamera = new GameObject("PlayerCamera");
                 mainCamera.AddComponent<Camera>();
+                mainCamera.AddComponent<AudioListener>();
                 
             var cameraFollow = mainCamera.AddComponent<CameraFollow>();
                 cameraFollow.targetFollow = cameraPoint;
                 cameraFollow.targetLook = transform;
+                
+            // Joining the team
+            _team = GameController.GetInstance().PlayerJoin(this);
+            _spawnPoint = GameObject.FindWithTag(_team + "Base").transform;
+
+            transform.position = _spawnPoint.position;
         }
     }
 
@@ -110,6 +125,13 @@ public class Submarine : NetworkBehaviour
         // unsubscribe events
         _pickup.droppedTreasure = null;
         _pickup.pickedUpTreasure = null;
+        
+        
+        // leave from team 
+        if (_team == null)
+            return;
+
+        GameController.GetInstance().PlayerLeave((Team) _team, this);
     }
 
     private void OnCollisionEnter(Collision other)
@@ -150,6 +172,6 @@ public class Submarine : NetworkBehaviour
         if (!isLocalPlayer)
             return;
         
-        GUI.Label(new Rect(0,0, Screen.width, 500), $"Hp:    {_health.CurrentHealth},     {_info}");
+        GUI.Label(new Rect(0,0, Screen.width, 500), $"---------------- Hp:    {_health.CurrentHealth},     {_info}");
     }
 }
