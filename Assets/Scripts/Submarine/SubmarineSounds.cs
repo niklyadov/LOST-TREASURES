@@ -15,6 +15,10 @@ public class SubmarineSounds : MonoBehaviour
     void Start()
     {
         audio = GetComponent<AudioSource>();
+        shot = Resources.Load("Audio/shot_redacted") as AudioClip;
+        move = Resources.Load("Audio/move_stable") as AudioClip;
+        chest = Resources.Load("Audio/chest sound_edited") as AudioClip;
+        pickup = Resources.Load("Audio/pickup_edited") as AudioClip;
     }
 
     // Update is called once per frame
