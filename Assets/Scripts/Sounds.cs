@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SubmarineSounds : MonoBehaviour
+public class Sounds : MonoBehaviour
 {
     public AudioClip shot;
     public AudioClip move;
     public AudioClip chest;
     public AudioClip pickup;
+    public AudioClip sonar;
     AudioSource audio;
     bool lastW = false;
     
@@ -19,6 +20,7 @@ public class SubmarineSounds : MonoBehaviour
         move = Resources.Load("Audio/move_stable") as AudioClip;
         chest = Resources.Load("Audio/chest sound_edited") as AudioClip;
         pickup = Resources.Load("Audio/pickup_edited") as AudioClip;
+        sonar = Resources.Load("Audio/sonar_edited") as AudioClip;
     }
 
     // Update is called once per frame
@@ -54,5 +56,9 @@ public class SubmarineSounds : MonoBehaviour
 
     void PlayPickupSound(){
         audio.PlayOneShot(pickup);
+    }
+
+    void PlaySonarSound(){
+        audio.PlayOneShot(sonar);
     }
 }
