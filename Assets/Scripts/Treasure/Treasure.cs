@@ -8,6 +8,7 @@ public class Treasure : MonoBehaviour
 {
     public int Price;
 
+    public GameObject LastOwner { get;  private set; } = null;
     public GameObject Owner { get;  private set; } = null;
 
     private Rigidbody _rigidbody;
@@ -25,6 +26,7 @@ public class Treasure : MonoBehaviour
     
     public void Drop()
     {
+        LastOwner = Owner;
         Owner = null;
         
         _rigidbody = gameObject.AddComponent<Rigidbody>();
