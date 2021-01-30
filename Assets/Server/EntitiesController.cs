@@ -39,6 +39,15 @@ public class EntitiesController : MonoBehaviour
         return this.playersList.Count;
     }
 
+    public void saveData()
+    {
+        string data;
+        for (int i = 0; i < this.getPlayersSize(); i++)
+        {
+            data = this.playersList[i].writeData();
+            //need to write it to file
+        }
+    }
     public void onUpdate() {// updating for all players
         for (int i = 0; i < this.getPlayersSize(); i++) {
             this.playersList[i].onUpdatePlayer();

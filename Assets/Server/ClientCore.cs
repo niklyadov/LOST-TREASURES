@@ -1,18 +1,15 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
-public class ClientCore : MonoBehaviour
+public class ClientCore : NetworkBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    public string nickname = "kekich";
 
-    // Update is called once per frame
-    void Update()
+    public override void OnStartClient()
     {
-        
+
+        ServerCore.entitiesController.addPlayer(new EntityPlayer(nickname));
     }
 }
