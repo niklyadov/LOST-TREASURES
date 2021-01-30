@@ -3,17 +3,19 @@ using UnityEngine;
 public class SubmarineHealth : MonoBehaviour
 {
     [SerializeField]
-    private float _health = 100;
+    private float maxHealth = 100;
+    private float _health;
+
+    public void Start()
+    {
+        _health = maxHealth;
+        GameController.GetInstance().OverlayUi.SetHP(_health / maxHealth);
+    }
 
     public void TakeDamage(float damage)
     {
-        Debug.Log("Damage " + damage);
         _health -= damage;
-        
-        if (_health <= 0)
-        {
-            Debug.Log("0 hp");
-        }
+        GameController.GetInstance().OverlayUi.SetHP(maxHealth, _health);
     }
 
     public float CurrentHealth

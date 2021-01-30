@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.UI;
 
 public class OverlayUI : MonoBehaviour
@@ -9,6 +10,12 @@ public class OverlayUI : MonoBehaviour
     [SerializeField] Transform blueScoreBar;
     [SerializeField] Transform CurrentHPBar;
     [SerializeField] GameObject Pause;
+    [SerializeField] private Image actionImage;
+
+    private void Awake()
+    {
+        GameController.GetInstance().OverlayUi = this;
+    }
 
     private void Update()
     {
@@ -28,9 +35,15 @@ public class OverlayUI : MonoBehaviour
         time.text = (seconds / 60).ToString() + ":" + (seconds % 60).ToString();
     }
 
-    public void SetHP(int total, int current)
+    public void SetActionPercentage(float percentage)
     {
-        CurrentHPBar.localScale.Set((float)current / total, 1, 1);
+        actionImage.fillAmount = percentage;
+    }
+    
+    public void SetHP(float total, float current)
+    {
+        Debug.Log(current / total);
+        CurrentHPBar.localScale.Set(current / total, 1, 1);
     }
 
     /// <summary>

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class CameraFollow : MonoBehaviour
 {
@@ -9,6 +6,11 @@ public class CameraFollow : MonoBehaviour
     
     public Transform targetFollow;
     public Transform targetLook;
+
+    [SerializeField]
+    private float movementSpeed = 10f;
+    [SerializeField]
+    private float rotationSpeed = 90f;
 
     private void Awake()
     {
@@ -22,15 +24,15 @@ public class CameraFollow : MonoBehaviour
             
         _transform.position = 
             Vector3.Lerp (
-                transform.position, 
+                _transform.position, 
                 targetFollow.position, 
-                10f * Time.deltaTime
+                movementSpeed * Time.deltaTime
                 );
         transform.rotation = 
             Quaternion.RotateTowards(
                 _transform.rotation, 
                 Quaternion.LookRotation(targetLook.position - _transform.position), 
-                Time.deltaTime * 90f
+                rotationSpeed* Time.deltaTime
                 );
     }
 }
