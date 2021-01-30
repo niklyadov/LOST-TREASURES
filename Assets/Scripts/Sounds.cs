@@ -8,6 +8,7 @@ public class Sounds : MonoBehaviour
     public AudioClip move;
     public AudioClip chest;
     public AudioClip pickup;
+    public AudioClip drop;
     public AudioClip sonar;
     AudioSource audio;
     bool lastW = false;
@@ -21,6 +22,7 @@ public class Sounds : MonoBehaviour
         chest = Resources.Load("Audio/chest sound_edited") as AudioClip;
         pickup = Resources.Load("Audio/pickup_edited") as AudioClip;
         sonar = Resources.Load("Audio/sonar_edited") as AudioClip;
+        drop = Resources.Load("Audio/drop") as AudioClip;
     }
 
     // Update is called once per frame
