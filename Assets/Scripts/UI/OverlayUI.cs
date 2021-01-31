@@ -14,6 +14,8 @@ public class OverlayUI : NetworkBehaviour
     [SerializeField] GameObject Pause;
     [SerializeField] private Image actionImage;
 
+    [SerializeField] private Animation takeDamageAnimation;
+    
     Vector3 _blueScale;
     Vector3 _hpScale;
 
@@ -82,6 +84,7 @@ public class OverlayUI : NetworkBehaviour
     {
         _hpScale.x = current / total;
         CurrentHPBar.localScale = _hpScale;
+        takeDamageAnimation.Play();
     }
 
     /// <summary>
@@ -121,8 +124,8 @@ public class OverlayUI : NetworkBehaviour
     {
         DisplayBigMessage(message);
     }
-    
-    
+
+
     [ClientRpc]
     public void RpcUpdateTime(int time)
     {

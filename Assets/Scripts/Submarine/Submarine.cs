@@ -21,7 +21,6 @@ public class Submarine : NetworkBehaviour
     private bool _lock = false;
     public bool Lock => _lock;
 
-    private Transform _spawnPoint;
     private OverlayUI _ui;
 
     private void Awake()
@@ -50,6 +49,7 @@ public class Submarine : NetworkBehaviour
         
         // set treasure transform to current
         newTransform.parent = transform;
+        newTransform.rotation = Quaternion.Euler(0, 0, 0);
     }
     
     [Command]
@@ -136,12 +136,15 @@ public class Submarine : NetworkBehaviour
     public void RpcSpawn(TeamColor team, int order)
     {
         Team = team;
+        
         if (!_networkIdentity.isLocalPlayer)
             return;
+        
         var baseTransform = GameObject.FindGameObjectWithTag(team.ToString() + "Base").transform;
         var basePosition = baseTransform.position;
         var baseRotation = baseTransform.rotation;
-        basePosition.x += order*2;
+        basePosition.x += order * 2;
+        
         transform.position = basePosition;
         transform.rotation = baseRotation;
     }
@@ -213,13 +216,33 @@ public class Submarine : NetworkBehaviour
 
     private void Damage(float force)
     {
-        _health.TakeDamage(force * 5);
+        _health.TakeDamage(force * 15);
+        _ui.SetHP(_health.MaxHealth, _health.CurrentHealth);
+        if (_health.CurrentHealth <= 0)
+        {
+            var baseTransform = GameObject.FindGameObjectWithTag(Team.ToString() + "Base").transform;
+            var basePosition = baseTransform.position;
+            var baseRotation = baseTransform.rotation;
+            basePosition.x += 2 * 2;
+        
+            transform.position = basePosition;
+            transform.rotation = baseRotation;
+        }
 
         if (force > 0.6f && _pickup.Treasure != null)
         {
             _pickup.Treasure.Drop();
             _pickup.droppedTreasure(_pickup.Treasure);
         }
-        _ui.SetHP(_health.MaxHealth, _health.CurrentHealth);
     }
+    
+    // [Command]
+    // private void CmdRespawn(NetworkInstanceId id)
+    // {
+    //     if (!isServer)
+    //         return;
+    //
+    //     var client = ClientScene.FindLocalObject(id).GetComponent<Submarine>();
+    //     client.RpcSpawn(client.Team, 0);
+    // }
 }

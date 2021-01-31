@@ -39,6 +39,11 @@ public class SubmarineMovement : MonoBehaviour
     
     public void Raise(int modify)
     {
+        // limits
+        if (modify == 1 && transform.position.x > 64)
+            return;
+        
+        
         _rigidbody.AddForce(modify * verticalSpeed * Time.fixedDeltaTime * _transform.up);
     }
 }

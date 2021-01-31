@@ -167,6 +167,32 @@ namespace Assets.Scripts
             }
         }
 
+        private IEnumerator Countdown(float seconds)
+        {
+            while (true)
+            {
+                yield return new WaitForSeconds(seconds);
+
+
+                if (_matchStarted)
+                {
+                    MatchControl();
+                }
+                else if (_pause)
+                {
+                    PauseControl();
+                }
+                else
+                {
+                    if (BlueTeam.Members.Count > 0 && RedTeam.Members.Count > 0)
+                        StartMatch();
+                    else OverlayUI.RpcSendBigMessageAll("1 player needed for start the match");
+                }
+
+            }                                                                                                                                                                                                                                                                                                    
+        }
+
+        // lock all players (control)
         private void SendAllLock(bool to)
         {
             foreach (var member in BlueTeam.Members)
@@ -174,39 +200,6 @@ namespace Assets.Scripts
 
             foreach (var member in RedTeam.Members)
                 member.RpcSetLock(to);
-        }
-        
-        private IEnumerator Countdown(float seconds)
-        {
-            while (true)
-            {
-                yield return new WaitForSeconds(seconds);
-                
-                
-                if (_matchStarted)
-                {
-                    MatchControl();
-                }
-                else
-                {
-                    // на паузе
-                    if (_pause)
-                    {
-                        PauseControl();
-                    }
-                    else
-                    {
-                        if (BlueTeam.Members.Count > 0 && RedTeam.Members.Count > 0)
-                        {
-                            StartMatch();
-                        }
-                        else
-                        {
-                            OverlayUI.RpcSendBigMessageAll("1 player needed for start the match");
-                        }    
-                    }
-                }
-            }
         }
     }
 }
