@@ -132,6 +132,20 @@ public class Submarine : NetworkBehaviour
         _lock = to;
     }
 
+    [ClientRpc]
+    public void RpcSpawn(TeamColor team, int order)
+    {
+        Team = team;
+        if (!_networkIdentity.isLocalPlayer)
+            return;
+        var baseTransform = GameObject.FindGameObjectWithTag(team.ToString() + "Base").transform;
+        var basePosition = baseTransform.position;
+        var baseRotation = baseTransform.rotation;
+        basePosition.x += order*2;
+        transform.position = basePosition;
+        transform.rotation = baseRotation;
+    }
+
     private void TakeControl()
     {
         if (_lock) return;
