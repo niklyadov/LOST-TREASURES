@@ -19,22 +19,17 @@ public class SubmarineSounds : MonoBehaviour
         move = Resources.Load("Audio/move_stable") as AudioClip;
         chest = Resources.Load("Audio/chest sound_edited") as AudioClip;
         pickup = Resources.Load("Audio/pickup_edited") as AudioClip;
+        audio.clip = move;
     }
 
-    // Update is called once per frame
-    void Update()
+    private void OnEnable()
     {
-        if (Input.GetKey(KeyCode.W)){
-            if(!audio.isPlaying){
-                audio.clip = move;
-                audio.Play();
-            }
-            lastW = true;
-        }
-        else if(lastW){
-            audio.Stop();
-            lastW = false;
-        }
+        audio.Play();
+    }
+
+    private void OnDisable()
+    {
+        audio.Stop();
     }
 
     public void PlaySoundCol(float force, float maxForce) {
