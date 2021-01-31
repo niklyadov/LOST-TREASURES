@@ -12,31 +12,28 @@ public class CustomNetworkHud : MonoBehaviour
     {
         _started = false;
     }
-    public void OnGUI()
+
+    public void Connect()
     {
-        GUILayout.Space(GuiOffset);
-        if (_started)
-        {
-           if (GUILayout.Button("Disconnect"))
-           {
-               _started = false;
-               NetworkManager.singleton.StopHost();
-           } 
-           return;
-        }
-        
-        if (GUILayout.Button("Host"))
-        {
-            _started = true;
-            NetworkManager.singleton.networkPort = int.Parse(Port);
-            NetworkManager.singleton.StartHost();
-        }
-        if (GUILayout.Button("Connect"))
-        {
-            _started = true;
-            NetworkManager.singleton.networkAddress = IpAddress;
-            NetworkManager.singleton.networkPort = int.Parse(Port);
-            NetworkManager.singleton.StartClient();
-        }
+        _started = true;
+        NetworkManager.singleton.networkAddress = IpAddress;
+        NetworkManager.singleton.networkPort = int.Parse(Port);
+        NetworkManager.singleton.StartClient();
+    }
+
+    public void Disconnect()
+    {
+        if (!_started)
+            return;
+
+        _started = false;
+        NetworkManager.singleton.StopHost();
+    }
+
+    public void StartHost()
+    {
+        _started = true;
+        NetworkManager.singleton.networkPort = int.Parse(Port);
+        NetworkManager.singleton.StartHost();
     }
 }
