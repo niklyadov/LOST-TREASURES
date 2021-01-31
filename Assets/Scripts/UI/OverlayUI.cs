@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Assets.Scripts;
+using System;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
@@ -11,6 +12,11 @@ public class OverlayUI : NetworkBehaviour
     [SerializeField] Text redScore;
     [SerializeField] RectTransform blueScoreBar;
     [SerializeField] RectTransform CurrentHPBar;
+    [SerializeField] Image HPBarImage;
+    [SerializeField] Image HPBarBGImage;
+    [SerializeField] Image RedTeamIcon;
+    [SerializeField] Image BlueTeamIcon;
+    [SerializeField] Text HPLabel;
     [SerializeField] GameObject Pause;
     [SerializeField] private Image actionImage;
 
@@ -136,5 +142,24 @@ public class OverlayUI : NetworkBehaviour
     public void RpcResetUI()
     {
         Reset();
+    }
+
+    public void SetTeam(TeamColor team)
+    {
+        if (team == TeamColor.Red)
+        {
+            HPBarImage.color = new Color(0.9254902f, 0.1019608f, 0);
+            HPBarBGImage.color = new Color(0.2641509f, 0.02910137f, 0);
+            HPLabel.color = new Color(0.9254902f, 0.1019608f, 0);
+            BlueTeamIcon.gameObject.SetActive(false);
+            RedTeamIcon.gameObject.SetActive(true);
+        } else if (team == TeamColor.Blue)
+        {
+            HPBarImage.color = new Color(0, 0.5647059f, 1);
+            HPBarBGImage.color = new Color(0.02251692f, 0.1270046f, 2075472f);
+            HPLabel.color = new Color(0, 0.5647059f, 1);
+            RedTeamIcon.gameObject.SetActive(false);
+            BlueTeamIcon.gameObject.SetActive(true);
+        }
     }
 }

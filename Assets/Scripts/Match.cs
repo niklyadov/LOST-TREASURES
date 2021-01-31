@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -147,10 +142,14 @@ namespace Assets.Scripts
                 else
                     message = "Draw!";
                 
-                OverlayUI.RpcSendBigMessageAll($"{message}\nblue : {BlueTeam.Score}, red : {RedTeam.Score}");
+                OverlayUI.RpcSendBigMessageAll($"{message}\nblue : {BlueTeam.Score}/ red : {RedTeam.Score}");
+                foreach (var member in BlueTeam.Members)
+                    member.GetComponent<SubmarinePickup>().DropTreasure();
+                foreach (var member in RedTeam.Members)
+                    member.GetComponent<SubmarinePickup>().DropTreasure();
 
                 // match stopped
-                
+
                 SendAllLock(true);
                 
                 _matchStarted = false;
@@ -160,6 +159,8 @@ namespace Assets.Scripts
                         
                 BlueTeam.Score = 0;
                 RedTeam.Score = 0;
+
+                GameObject.FindGameObjectWithTag("Treasures").GetComponent<TreasureSpawn>().RpcReset();
             }
             else
             {

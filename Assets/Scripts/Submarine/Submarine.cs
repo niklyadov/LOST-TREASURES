@@ -5,7 +5,15 @@ using UnityEngine.Networking;
 
 public class Submarine : NetworkBehaviour
 {
-    public TeamColor Team;
+    public TeamColor Team 
+    {
+        get => _team;
+        set
+        {
+            _team = value;
+            _ui.SetTeam(value);
+        }
+    }
     private SubmarineMovement _movement;
     private SubmarinePickup _pickup;
     private SubmarineHealth _health;
@@ -13,7 +21,8 @@ public class Submarine : NetworkBehaviour
     
     private NetworkIdentity _networkIdentity;
     private Rigidbody _rigidbody;
-    private TeamColor? _team = null;
+    private Transform _transform;
+    private TeamColor _team = TeamColor.Blue;
 
     [SerializeField]
     public Transform cameraPoint;
@@ -35,46 +44,20 @@ public class Submarine : NetworkBehaviour
         _sounds = GetComponent<SubmarineSounds>();
         
         _rigidbody = GetComponent<Rigidbody>();
+        _transform = transform;
         
         _networkIdentity = GetComponent<NetworkIdentity>();
     }
 
     #region Networking treasure
-
-    [Command]
-    private void CmdSetParent(NetworkInstanceId idNum)
-    {
-        // treasure
-        var newTransform = ClientScene.FindLocalObject(idNum).transform;
-        
-        // set treasure transform to current
-        newTransform.parent = transform;
-        newTransform.rotation = Quaternion.Euler(0, 0, 0);
-    }
-    
-    [Command]
-    private void CmdRemoveParent(NetworkInstanceId idNum)
-    {
-        // treasure
-        var newTransform = ClientScene.FindLocalObject(idNum).transform;
-        
-        // set treasure transform to null
-        newTransform.parent = null;
-    }
     
     private void DroppedTreasure(Treasure treasure)
     {
-        if (_networkIdentity.isLocalPlayer)
-            CmdRemoveParent(treasure.gameObject.GetComponent<NetworkIdentity>().netId);
     }
     
     private void PickedUpTreasure(Treasure treasure)
     {
-        
         _sounds.PlayPickupSound();
-        
-        if (_networkIdentity.isLocalPlayer && treasure.Owner == null)
-            CmdSetParent(treasure.gameObject.GetComponent<NetworkIdentity>().netId);
     }    
 
     #endregion
@@ -88,19 +71,11 @@ public class Submarine : NetworkBehaviour
                 mainCamera.transform.Rotate(new Vector3(30, 0, 0));
                 mainCamera.AddComponent<Camera>();
                 mainCamera.AddComponent<AudioListener>();
-                
-            //var cameraFollow = mainCamera.AddComponent<CameraFollow>();
-            //    cameraFollow.targetFollow = cameraPoint;
-            //    cameraFollow.targetLook = transform;
 
-            // Joining the team
-            //_team = GameController.GetInstance().PlayerJoin(this);
-            CmdJoinTeam();
-            //_spawnPoint = GameObject.FindWithTag(_team + "Base").transform;
-
-            //transform.position = _spawnPoint.position;
+            
             _ui = GameObject.FindGameObjectWithTag("UI").GetComponent<OverlayUI>();
             _ui.SetHP(_health.MaxHealth, _health.MaxHealth);
+            CmdJoinTeam();
         }
     }
 
@@ -124,6 +99,7 @@ public class Submarine : NetworkBehaviour
             GameObject.FindGameObjectWithTag("Global").GetComponent<Match>().CmdLeaveTeam(netId);
     }
 
+    [ClientRpc]
     public void RpcSetLock(bool to)
     {
         if (!isLocalPlayer)
@@ -185,6 +161,7 @@ public class Submarine : NetworkBehaviour
 
     private void OnCollisionEnter(Collision other)
     {
+       _transform.rotation = Quaternion.Euler(0, _transform.rotation.eulerAngles.y, 0);
        if (!_networkIdentity.isLocalPlayer)
             return;
 
@@ -220,6 +197,15 @@ public class Submarine : NetworkBehaviour
         _ui.SetHP(_health.MaxHealth, _health.CurrentHealth);
         if (_health.CurrentHealth <= 0)
         {
+            if (_pickup.Treasure != null)
+            {
+                _pickup.CmdDrop(_pickup.Treasure.netId);
+                _pickup.droppedTreasure(_pickup.Treasure);
+            }
+
+            _health.Restore();
+            _ui.SetHP(_health.MaxHealth, _health.CurrentHealth);
+
             var baseTransform = GameObject.FindGameObjectWithTag(Team.ToString() + "Base").transform;
             var basePosition = baseTransform.position;
             var baseRotation = baseTransform.rotation;
@@ -231,18 +217,8 @@ public class Submarine : NetworkBehaviour
 
         if (force > 0.6f && _pickup.Treasure != null)
         {
-            _pickup.Treasure.Drop();
+            _pickup.CmdDrop(_pickup.Treasure.netId);
             _pickup.droppedTreasure(_pickup.Treasure);
         }
     }
-    
-    // [Command]
-    // private void CmdRespawn(NetworkInstanceId id)
-    // {
-    //     if (!isServer)
-    //         return;
-    //
-    //     var client = ClientScene.FindLocalObject(id).GetComponent<Submarine>();
-    //     client.RpcSpawn(client.Team, 0);
-    // }
 }

@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Networking;
 
-public class SubmarinePickup : MonoBehaviour
+public class SubmarinePickup : NetworkBehaviour
 {
     [SerializeField]
     private float timeForPickup = 2;
@@ -111,7 +112,7 @@ public class SubmarinePickup : MonoBehaviour
 
                 Treasure = treasure;
                 pickedUpTreasure(treasure);
-                treasure.Pickup(gameObject);
+                CmdPickUp(_submarine.netId, treasure.netId);
 
                 PickUpTimer = 0;
                 return;
@@ -124,10 +125,32 @@ public class SubmarinePickup : MonoBehaviour
         }
     }
 
-    private void DropTreasure()
+    public void DropTreasure()
     {
+        if (Treasure == null)
+            return;
         droppedTreasure(Treasure);
-        Treasure.Drop();
+        CmdDrop(Treasure.netId);
         Treasure = null;
+    }
+
+    [Command]
+    public void CmdPickUp(NetworkInstanceId playerId, NetworkInstanceId treasureId)
+    {
+        if (isServer)
+        {
+            Debug.LogError("Pick up player " + playerId);
+            ClientScene.FindLocalObject(treasureId).GetComponent<Treasure>().RpcPickup(playerId);
+        }
+
+    }
+
+    [Command]
+    public void CmdDrop(NetworkInstanceId treasureId)
+    {
+        if (isServer)
+        {
+            ClientScene.FindLocalObject(treasureId).GetComponent<Treasure>().RpcDrop();
+        }
     }
 }

@@ -20,4 +20,9 @@ public class SubmarineHealth: MonoBehaviour
     {
         _health -= damage;
     }
+
+    public void Restore()
+    {
+        _health = maxHealth;
+    }    
 }

@@ -15,12 +15,9 @@ public class Base : NetworkBehaviour
         
         if (treasure == null)
             return;
-        
-        if (treasure.Owner != null)
-            return;
 
-        CmdAddScore(treasure.Price);        
-        Destroy(treasure.gameObject);
+        CmdAddScore(treasure.Price);
+        treasure.gameObject.SetActive(false);
     }
 
     [Command]

@@ -1,33 +1,29 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Networking;
 
-public class Treasure : MonoBehaviour
+public class Treasure : NetworkBehaviour
 {
     public int Price;
-
-    public GameObject LastOwner { get;  private set; } = null;
-    public GameObject Owner { get;  private set; } = null;
-
     private Rigidbody _rigidbody;
-
-    public void Pickup(GameObject newOwner)
+    
+    [ClientRpc]
+    public void RpcPickup(NetworkInstanceId playerId)
     {
-        Owner = newOwner;
+        Debug.LogError("Pick up player " + playerId + " treasure " + netId);
         if (_rigidbody != null)
         {
-            Destroy (_rigidbody);
+            Destroy(_rigidbody);
             _rigidbody = null;
         }
+
+        transform.parent = ClientScene.FindLocalObject(playerId).transform;
     }
-    
-    public void Drop()
+
+    [ClientRpc]
+    public void RpcDrop()
     {
-        LastOwner = Owner;
-        Owner = null;
-        
+        Debug.LogError("Drop treasure " + netId);
+        transform.parent = null;
         _rigidbody = gameObject.AddComponent<Rigidbody>();
     }
 }
