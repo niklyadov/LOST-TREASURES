@@ -16,7 +16,7 @@ public class Treasure : MonoBehaviour
     public void Pickup(GameObject newOwner)
     {
         Owner = newOwner;
-        
+        transform.rotation = Quaternion.Euler(0, 0, 0);
         if (_rigidbody != null)
         {
             Destroy (_rigidbody);

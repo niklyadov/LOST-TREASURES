@@ -91,9 +91,8 @@ namespace Assets.Scripts
         [Command]
         public void CmdLeaveTeam(NetworkInstanceId playerId)
         {
-            var player = ClientScene.FindLocalObject(playerId).GetComponent<Submarine>();
-            BlueTeam.Members.Remove(player);
-            RedTeam.Members.Remove(player);
+            BlueTeam.Members.RemoveAll(player => player == null || player.netId == playerId);
+            RedTeam.Members.RemoveAll(player => player == null || player.netId == playerId);
         }
 
         [Command]

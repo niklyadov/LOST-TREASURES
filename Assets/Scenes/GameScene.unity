@@ -19527,7 +19527,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0b467842d09245b88a49b92e7b5697dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  IpAddress: localhost
+  IpAddress: 192.168.0.101
   Port: 7777
   GuiOffset: 0
 --- !u!1001 &363265884

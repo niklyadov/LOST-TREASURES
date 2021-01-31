@@ -201,7 +201,7 @@ public class Submarine : NetworkBehaviour
     public void CmdCollision(NetworkInstanceId otherId, float force)
     {
         if (isServer)
-            ClientScene.FindLocalObject(netId).GetComponent<Submarine>().RpcCollisionEnter(force);
+            ClientScene.FindLocalObject(otherId).GetComponent<Submarine>().RpcCollisionEnter(force);
     }
 
     [ClientRpc]
