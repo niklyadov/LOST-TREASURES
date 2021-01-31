@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Networking;
 
-public class SubmarineHealth
+public class SubmarineHealth: MonoBehaviour
 {
     public float CurrentHealth { get => _health; }
     public float MaxHealth { get => maxHealth; }
