@@ -26,12 +26,54 @@ namespace Assets.Scripts
 
         public OverlayUI OverlayUI;
 
-        public int Duration;
+        public int MatchDuration = 300;
+        public int PauseDuration = 20;
+        
+        [SyncVar]
         public int Time;
+        
         public Team BlueTeam;
         public Team RedTeam;
 
+        [SerializeField]
         private bool _matchStarted;
+        
+        [SerializeField]
+        private bool _pause = true;
+
+        private void Start()
+        {
+            if (isServer)
+            {
+                OverlayUI = GameObject.FindGameObjectWithTag("UI").GetComponent<OverlayUI>();
+                
+                StopAllCoroutines();
+                
+                Time = PauseDuration;
+                _pause = true;
+                
+                BlueTeam.Score = 0;
+                RedTeam.Score = 0;
+
+                // start timer
+                StartCoroutine(Countdown(1));
+            }
+        }
+
+        public void StartMatch()
+        {
+            _matchStarted = true;
+            
+            OverlayUI.RpcResetUI();
+
+            SendAllLock(false);
+            
+            Time = MatchDuration;
+            _pause = false;
+                
+            BlueTeam.Score = 0;
+            RedTeam.Score = 0;
+        }
 
         [Command]
         public void CmdJoinTeam(NetworkInstanceId playerId)
@@ -40,7 +82,10 @@ namespace Assets.Scripts
                 BlueTeam.CmdJoinTeam(playerId);
             else
                 RedTeam.CmdJoinTeam(playerId);
-            GameObject.FindGameObjectWithTag("UI").GetComponent<OverlayUI>().RpcUpdateScore(BlueTeam.Score, RedTeam.Score);
+            
+            OverlayUI.RpcUpdateScore(BlueTeam.Score, RedTeam.Score);
+            
+            ClientScene.FindLocalObject(playerId).GetComponent<Submarine>().RpcSetLock(true);
         }
 
         [Command]
@@ -60,39 +105,106 @@ namespace Assets.Scripts
                     BlueTeam.Score += points;
                 else if (color == TeamColor.Red)
                     RedTeam.Score += points;
-                GameObject.FindGameObjectWithTag("UI").GetComponent<OverlayUI>().RpcUpdateScore(BlueTeam.Score, RedTeam.Score);
+                
+                OverlayUI.RpcUpdateScore(BlueTeam.Score, RedTeam.Score);
             }
         }
 
-        public void StartMatch()
+        private void PauseControl()
         {
-            _matchStarted = true;
+            Time--;
+                    
+            if (Time <= 0)
+            {
+                _pause = false;
+                _matchStarted = false;
+                        
+                OverlayUI.RpcSendBigMessageAll("Match started!");
+            }
+            else
+            {
+                if (Time % 5 == 0)
+                {
+                    OverlayUI.RpcSendBigMessageAll(Time + "seconds!");
+                } else if (Time < 5)
+                {
+                    OverlayUI.RpcSendBigMessageAll(Time.ToString());
+                } 
+            }
         }
 
+        private void MatchControl()
+        {
+            Time--;
+                    
+            if (Time <= 0)
+            {
+                var message = "";
+                
+                if (BlueTeam.Score > RedTeam.Score)
+                    message = "Blue won!";
+                else if (BlueTeam.Score < RedTeam.Score)
+                    message = "Red won!";
+                else
+                    message = "Draw!";
+                
+                OverlayUI.RpcSendBigMessageAll($"{message}\nblue : {BlueTeam.Score}, red : {RedTeam.Score}");
+
+                // match stopped
+                
+                SendAllLock(true);
+                
+                _matchStarted = false;
+                _pause = true;
+                        
+                Time = PauseDuration;
+                        
+                BlueTeam.Score = 0;
+                RedTeam.Score = 0;
+            }
+            else
+            {
+                OverlayUI.RpcUpdateTime(Time);
+            }
+        }
+
+        private void SendAllLock(bool to)
+        {
+            foreach (var member in BlueTeam.Members)
+                member.RpcSetLock(to);
+
+            foreach (var member in RedTeam.Members)
+                member.RpcSetLock(to);
+        }
+        
         private IEnumerator Countdown(float seconds)
         {
             while (true)
             {
                 yield return new WaitForSeconds(seconds);
-
+                
+                
                 if (_matchStarted)
                 {
-                    if (Time == 0)
-                    {
-                        // match stopped
-                    }
-
-                    Time--;
+                    MatchControl();
                 }
                 else
                 {
-                    if (BlueTeam.Members.Count > 0 && RedTeam.Members.Count > 0)
+                    // на паузе
+                    if (_pause)
                     {
-                        StartMatch();
+                        PauseControl();
                     }
                     else
                     {
-                        //Text = недостаточно игроков
+                        if (BlueTeam.Members.Count > 0 && RedTeam.Members.Count > 0)
+                        {
+                            StartMatch();
+                        }
+                        else
+                        {
+                            OverlayUI.RpcSendBigMessageAll("1 player needed for start the match");
+                        }    
                     }
                 }
             }

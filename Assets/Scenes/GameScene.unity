@@ -36121,10 +36121,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   OverlayUI: {fileID: 1043745726}
-  Duration: 0
+  MatchDuration: 300
+  PauseDuration: 20
   Time: 0
   BlueTeam: {fileID: 1106959755}
   RedTeam: {fileID: 1106959754}
+  _matchStarted: 0
+  _pause: 1
 --- !u!114 &1106959753
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -52068,6 +52071,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_OfflineScene
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 3277308597554873104, guid: edd6efb1ff0c04563b9709c220525342,
+        type: 3}
+      propertyPath: m_NetworkAddress
+      value: 0.0.0.0
       objectReference: {fileID: 0}
     - target: {fileID: 3277308597554873107, guid: edd6efb1ff0c04563b9709c220525342,
         type: 3}

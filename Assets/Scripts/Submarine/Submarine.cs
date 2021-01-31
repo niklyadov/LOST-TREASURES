@@ -18,7 +18,8 @@ public class Submarine : NetworkBehaviour
     [SerializeField]
     public Transform cameraPoint;
 
-    private string _info;
+    private bool _lock = false;
+    public bool Lock => _lock;
 
     private Transform _spawnPoint;
     private OverlayUI _ui;
@@ -123,8 +124,18 @@ public class Submarine : NetworkBehaviour
             GameObject.FindGameObjectWithTag("Global").GetComponent<Match>().CmdLeaveTeam(netId);
     }
 
+    public void RpcSetLock(bool to)
+    {
+        if (!isLocalPlayer)
+            return;
+        
+        _lock = to;
+    }
+
     private void TakeControl()
     {
+        if (_lock) return;
+        
         if (Input.GetKey(KeyCode.W)) 
             _movement.Forward(1);
         else if (Input.GetKey(KeyCode.S))
@@ -160,14 +171,16 @@ public class Submarine : NetworkBehaviour
        if (!_networkIdentity.isLocalPlayer)
             return;
 
-        var submarine = other.gameObject.GetComponent<Submarine>();
-        if (submarine == null)
-            return;
+       if (_lock)
+           return;
 
-        var magnitude = other.impulse.magnitude;
-        _info += $" m: {magnitude} ;  ";
+       var submarine = other.gameObject.GetComponent<Submarine>();
+       if (submarine == null)
+           return;
 
-        CmdCollision(submarine.netId, magnitude);
+       var magnitude = other.impulse.magnitude;
+
+       CmdCollision(submarine.netId, magnitude);
     }
 
     [Command]
@@ -194,14 +207,5 @@ public class Submarine : NetworkBehaviour
             _pickup.droppedTreasure(_pickup.Treasure);
         }
         _ui.SetHP(_health.MaxHealth, _health.CurrentHealth);
-    }
-    
-
-    private void OnGUI()
-    {
-        if (!isLocalPlayer)
-            return;
-        
-        GUI.Label(new Rect(0,0, Screen.width, 500), $"---------------- Hp:    {_health.CurrentHealth},     {_info}");
     }
 }

@@ -17,6 +17,15 @@ public class OverlayUI : NetworkBehaviour
     Vector3 _blueScale;
     Vector3 _hpScale;
 
+    //private int _blueScoreDelta = 0;
+    //private int _redScoreDelta = 0;
+    
+    //private int _blueScore = 0;
+    //private int _redScore = 0;
+
+    //private float _numberUpdateTime = 0.005f;
+    //private float _numberUpdateDelta = 0;
+
     private void Start()
     {
         Reset();
@@ -26,12 +35,32 @@ public class OverlayUI : NetworkBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Escape))
             Pause.SetActive(!Pause.activeSelf);
+
+        /*
+        if (_numberUpdateDelta >= _numberUpdateTime)
+        {
+            _numberUpdateDelta = 0;
+
+            if (_blueScoreDelta < _blueScore)
+                _blueScoreDelta++;
+            
+            if (_redScoreDelta < _redScore)
+                _redScoreDelta++;
+
+            blueScore.text = _blueScoreDelta.ToString();
+            redScore.text = _redScoreDelta.ToString();
+        }
+        else _numberUpdateDelta += Time.deltaTime;*/
     }
 
     public void SetScore(int blue, int red)
     {
+        //_blueScore = blue;
+        //_redScore = red;
+
         blueScore.text = blue.ToString();
         redScore.text = red.ToString();
+        
         if (blue + red == 0)
             _blueScale.x = 0.5f;
         else
@@ -85,5 +114,24 @@ public class OverlayUI : NetworkBehaviour
     public void RpcUpdateScore(int blueScore, int redScore)
     {
         SetScore(blueScore, redScore);
+    }
+
+    [ClientRpc]
+    public void RpcSendBigMessageAll(string message)
+    {
+        DisplayBigMessage(message);
+    }
+    
+    
+    [ClientRpc]
+    public void RpcUpdateTime(int time)
+    {
+        SetTime(time);
+    }
+    
+    [ClientRpc]
+    public void RpcResetUI()
+    {
+        Reset();
     }
 }

@@ -14,6 +14,8 @@ public class SubmarinePickup : MonoBehaviour
     private Transform _transform;
     private OverlayUI _UI;
 
+    private Submarine _submarine;
+
     [SerializeField] private float _pickupTimer;
     private float PickUpTimer 
     { 
@@ -40,6 +42,7 @@ public class SubmarinePickup : MonoBehaviour
     private void Start()
     {
         _UI = GameObject.FindGameObjectWithTag("UI").GetComponent<OverlayUI>();
+        _submarine = GetComponent<Submarine>();
     }
 
     private void UpdateTimerProgress()
@@ -54,6 +57,9 @@ public class SubmarinePickup : MonoBehaviour
 
     private void Update()
     {
+        if (_submarine.Lock)
+            return;
+
         if (Input.GetKeyDown(KeyCode.Space))
         {
             if (Treasure != null)
