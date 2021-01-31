@@ -51313,6 +51313,7 @@ GameObject:
   - component: {fileID: 1880294654}
   - component: {fileID: 1880294653}
   - component: {fileID: 1880294652}
+  - component: {fileID: 1880294655}
   m_Layer: 0
   m_Name: RedBase
   m_TagString: Untagged
@@ -51383,6 +51384,19 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: -25.496, z: 0}
+--- !u!65 &1880294655
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1880294651}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 9.2430725, y: 0.451473, z: 8.488173}
+  m_Center: {x: 0.08781146, y: 3.8601093, z: 0.025466919}
 --- !u!1 &2062150397
 GameObject:
   m_ObjectHideFlags: 0
