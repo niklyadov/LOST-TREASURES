@@ -101,6 +101,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1058bab031144c9cbc90065a45580a06, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Team: 0
   cameraPoint: {fileID: 4807152285347868658}
 --- !u!114 &1208164561740189494
 MonoBehaviour:
@@ -114,9 +115,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7cc9693a1cc994b71a75a0d698bc54b2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  horizontalSpeed: 100
-  verticalSpeed: 20
-  rotationSpeed: 30
+  horizontalSpeed: 200
+  verticalSpeed: 100
+  rotationSpeed: 100
 --- !u!114 &1208164561740189481
 MonoBehaviour:
   m_ObjectHideFlags: 0

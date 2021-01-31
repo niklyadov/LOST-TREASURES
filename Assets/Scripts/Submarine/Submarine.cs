@@ -1,9 +1,11 @@
+using Assets.Scripts;
 using System;
 using UnityEngine;
 using UnityEngine.Networking;
 
 public class Submarine : NetworkBehaviour
 {
+    public TeamColor Team;
     private SubmarineMovement _movement;
     private SubmarinePickup _pickup;
     private SubmarineHealth _health;
@@ -11,7 +13,7 @@ public class Submarine : NetworkBehaviour
     
     private NetworkIdentity _networkIdentity;
     private Rigidbody _rigidbody;
-    private Team? _team = null;
+    private TeamColor? _team = null;
 
     [SerializeField]
     public Transform cameraPoint;
@@ -19,6 +21,7 @@ public class Submarine : NetworkBehaviour
     private string _info;
 
     private Transform _spawnPoint;
+    private OverlayUI _ui;
 
     private void Awake()
     {
@@ -80,19 +83,23 @@ public class Submarine : NetworkBehaviour
         if (_networkIdentity.isLocalPlayer)
         {
             // Spawn camera
-            var mainCamera = new GameObject("PlayerCamera");
+            var mainCamera = Instantiate(new GameObject("PlayerCamera"), cameraPoint);
+                mainCamera.transform.Rotate(new Vector3(30, 0, 0));
                 mainCamera.AddComponent<Camera>();
                 mainCamera.AddComponent<AudioListener>();
                 
-            var cameraFollow = mainCamera.AddComponent<CameraFollow>();
-                cameraFollow.targetFollow = cameraPoint;
-                cameraFollow.targetLook = transform;
-                
-            // Joining the team
-            _team = GameController.GetInstance().PlayerJoin(this);
-            _spawnPoint = GameObject.FindWithTag(_team + "Base").transform;
+            //var cameraFollow = mainCamera.AddComponent<CameraFollow>();
+            //    cameraFollow.targetFollow = cameraPoint;
+            //    cameraFollow.targetLook = transform;
 
-            transform.position = _spawnPoint.position;
+            // Joining the team
+            //_team = GameController.GetInstance().PlayerJoin(this);
+            CmdJoinTeam();
+            //_spawnPoint = GameObject.FindWithTag(_team + "Base").transform;
+
+            //transform.position = _spawnPoint.position;
+            _ui = GameObject.FindGameObjectWithTag("UI").GetComponent<OverlayUI>();
+            _ui.SetHP(_health.MaxHealth, _health.MaxHealth);
         }
     }
 
@@ -100,6 +107,20 @@ public class Submarine : NetworkBehaviour
     {
         if (_networkIdentity.isLocalPlayer && Input.anyKey)
             TakeControl();
+    }
+
+    [Command]
+    private void CmdJoinTeam()
+    {
+        if (isServer)
+            GameObject.FindGameObjectWithTag("Global").GetComponent<Match>().CmdJoinTeam(netId);
+    }
+
+    [Command]
+    private void CmdLeaveTeam()
+    {
+        if (isServer)
+            GameObject.FindGameObjectWithTag("Global").GetComponent<Match>().CmdLeaveTeam(netId);
     }
 
     private void TakeControl()
@@ -131,12 +152,12 @@ public class Submarine : NetworkBehaviour
         if (_team == null)
             return;
 
-        GameController.GetInstance().PlayerLeave((Team) _team, this);
+        CmdLeaveTeam();
     }
 
     private void OnCollisionEnter(Collision other)
     {
-        if (!_networkIdentity.isLocalPlayer)
+       if (!_networkIdentity.isLocalPlayer)
             return;
 
         var submarine = other.gameObject.GetComponent<Submarine>();
@@ -145,27 +166,36 @@ public class Submarine : NetworkBehaviour
 
         var magnitude = other.impulse.magnitude;
         _info += $" m: {magnitude} ;  ";
-        
-        CmdSubmarineCollision(submarine.GetComponent<NetworkIdentity>().netId, magnitude);
+
+        CmdCollision(submarine.netId, magnitude);
     }
 
     [Command]
-    private void CmdSubmarineCollision(NetworkInstanceId idNum, float magnitude)
+    public void CmdCollision(NetworkInstanceId otherId, float force)
     {
-        var submarine = ClientScene.FindLocalObject(idNum);
-            submarine.GetComponent<SubmarineHealth>().TakeDamage(magnitude * 5);
-            var pickup = submarine.GetComponent<SubmarinePickup>();
-            
-        if (magnitude > 0.6f) 
-        {
-            // lost treasure
-            if (pickup.Treasure != null)
-            {
-                pickup.Treasure.Drop();
-                pickup.droppedTreasure(pickup.Treasure);
-            } 
-        }
+        if (isServer)
+            ClientScene.FindLocalObject(netId).GetComponent<Submarine>().RpcCollisionEnter(force);
     }
+
+    [ClientRpc]
+    public void RpcCollisionEnter(float force)
+    {
+        if (_networkIdentity.isLocalPlayer)
+            Damage(force);
+    }
+
+    private void Damage(float force)
+    {
+        _health.TakeDamage(force * 5);
+
+        if (force > 0.6f && _pickup.Treasure != null)
+        {
+            _pickup.Treasure.Drop();
+            _pickup.droppedTreasure(_pickup.Treasure);
+        }
+        _ui.SetHP(_health.MaxHealth, _health.CurrentHealth);
+    }
+    
 
     private void OnGUI()
     {

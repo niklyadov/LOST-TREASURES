@@ -1,7 +1,12 @@
 using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.Networking;
 
-public class SubmarineHealth : MonoBehaviour
+public class SubmarineHealth
 {
+    public float CurrentHealth { get => _health; }
+    public float MaxHealth { get => maxHealth; }
+
     [SerializeField]
     private float maxHealth = 100;
     private float _health;
@@ -9,17 +14,10 @@ public class SubmarineHealth : MonoBehaviour
     public void Start()
     {
         _health = maxHealth;
-        GameController.GetInstance().OverlayUi.SetHP(_health / maxHealth);
     }
 
     public void TakeDamage(float damage)
     {
         _health -= damage;
-        GameController.GetInstance().OverlayUi.SetHP(maxHealth, _health);
-    }
-
-    public float CurrentHealth
-    {
-        get => _health;
     }
 }

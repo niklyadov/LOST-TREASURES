@@ -1,20 +1,25 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.Networking;
 using UnityEngine.UI;
 
-public class OverlayUI : MonoBehaviour
+public class OverlayUI : NetworkBehaviour
 {
+    [SerializeField] Text bigMessage;
     [SerializeField] Text time;
     [SerializeField] Text blueScore;
     [SerializeField] Text redScore;
-    [SerializeField] Transform blueScoreBar;
-    [SerializeField] Transform CurrentHPBar;
+    [SerializeField] RectTransform blueScoreBar;
+    [SerializeField] RectTransform CurrentHPBar;
     [SerializeField] GameObject Pause;
     [SerializeField] private Image actionImage;
 
-    private void Awake()
+    Vector3 _blueScale;
+    Vector3 _hpScale;
+
+    private void Start()
     {
-        GameController.GetInstance().OverlayUi = this;
+        Reset();
     }
 
     private void Update()
@@ -27,7 +32,11 @@ public class OverlayUI : MonoBehaviour
     {
         blueScore.text = blue.ToString();
         redScore.text = red.ToString();
-        blueScoreBar.localScale.Set((float)blue / (blue + red), 1, 1);
+        if (blue + red == 0)
+            _blueScale.x = 0.5f;
+        else
+            _blueScale.x = blue / (float)(blue + red);
+        blueScoreBar.localScale = _blueScale;
     }
 
     public void SetTime(int seconds)
@@ -42,8 +51,8 @@ public class OverlayUI : MonoBehaviour
     
     public void SetHP(float total, float current)
     {
-        Debug.Log(current / total);
-        CurrentHPBar.localScale.Set(current / total, 1, 1);
+        _hpScale.x = current / total;
+        CurrentHPBar.localScale = _hpScale;
     }
 
     /// <summary>
@@ -52,6 +61,29 @@ public class OverlayUI : MonoBehaviour
     /// <param name="rate"></param>
     public void SetHP(float rate)
     {
-        CurrentHPBar.localScale.Set(Mathf.Clamp(rate,0,1), 1, 1);
+        _hpScale.x = Mathf.Clamp(rate, 0, 1);
+        CurrentHPBar.localScale = _hpScale;
+    }
+
+    public void DisplayBigMessage(string text)
+    {
+        bigMessage.text = text;
+        bigMessage.gameObject.SetActive(true);
+    }
+
+    public void Reset()
+    {
+        blueScore.text = "0";
+        redScore.text = "0";
+        time.text = "00:00";
+        _blueScale = Vector3.one;
+        _hpScale = Vector3.one;
+        SetScore(0, 0);
+    }
+
+    [ClientRpc]
+    public void RpcUpdateScore(int blueScore, int redScore)
+    {
+        SetScore(blueScore, redScore);
     }
 }

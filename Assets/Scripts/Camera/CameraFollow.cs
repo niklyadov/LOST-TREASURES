@@ -17,17 +17,12 @@ public class CameraFollow : MonoBehaviour
         _transform = transform;
     }
     
-    void Update()
+    void LateUpdate()
     {
         if (targetFollow == null || targetLook == null)
             Destroy(gameObject);
             
-        _transform.position = 
-            Vector3.Lerp (
-                _transform.position, 
-                targetFollow.position, 
-                movementSpeed * Time.deltaTime
-                );
+        _transform.Translate((targetFollow.position - _transform.position)* movementSpeed * Time.deltaTime);
         transform.rotation = 
             Quaternion.RotateTowards(
                 _transform.rotation, 

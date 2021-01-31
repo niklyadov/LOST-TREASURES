@@ -12,8 +12,18 @@ public class SubmarinePickup : MonoBehaviour
     private Transform _treasureSpawnPoint;
     
     private Transform _transform;
+    private OverlayUI _UI;
 
     [SerializeField] private float _pickupTimer;
+    private float PickUpTimer 
+    { 
+        get  { return _pickupTimer; }
+        set
+        {
+            _pickupTimer = value;
+            UpdateTimerProgress();
+        }
+    }
 
     public UnityAction<Treasure> pickedUpTreasure;
     public UnityAction<Treasure> droppedTreasure;
@@ -22,14 +32,19 @@ public class SubmarinePickup : MonoBehaviour
 
     #region Timeout Optimize
     // 10 calls per second
-    private float updateTimeout = 0.1f;
-    private float _updateTimeout;
+    private float updateInterval = 0.1f;
+    private float _updateDeltaTime;
 
     #endregion
 
-    private void UpdatePercentage()
+    private void Start()
     {
-        GameController.GetInstance().OverlayUi.SetActionPercentage(_pickupTimer / timeForPickup);
+        _UI = GameObject.FindGameObjectWithTag("UI").GetComponent<OverlayUI>();
+    }
+
+    private void UpdateTimerProgress()
+    {
+        _UI.SetActionPercentage(_pickupTimer / timeForPickup);
     }
 
     private void Awake()
@@ -41,73 +56,72 @@ public class SubmarinePickup : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            // drop treasure
             if (Treasure != null)
             {
-                droppedTreasure(Treasure);
-                Treasure.Drop();
-                Treasure = null;
-                
+                DropTreasure();
                 return;
             }
-            
             _pressed = true;
         }
 
         if (Input.GetKeyUp(KeyCode.Space))
         {
             _pressed = false;
-            GameController.GetInstance().OverlayUi.SetActionPercentage(0);
-            
-            _pickupTimer = 0;
-            
-            UpdatePercentage();
-            
+            PickUpTimer = 0;
             return;
         }
 
-        if (_updateTimeout >= updateTimeout)
+        OptimizedUpdate();
+        
+    }
+
+    private void OptimizedUpdate()
+    {
+        if (_updateDeltaTime >= updateInterval)
         {
-            _updateTimeout = 0;
+            _updateDeltaTime = 0;
             if (_pressed)
+                WaitForPickUp();
+        }
+        else
+        {
+            _updateDeltaTime += Time.deltaTime;
+        }
+    }
+
+    private void WaitForPickUp()
+    {
+        if (Physics.Raycast(new Ray(_transform.position, _transform.up * -1), out RaycastHit hitInfo, 2))
+        {
+            var treasure = hitInfo.transform.GetComponent<Treasure>();
+
+            if (treasure != null)
             {
-                if (Physics.Raycast(new Ray(_transform.position, _transform.up * -1), out RaycastHit hitInfo, 4))
+                if (PickUpTimer < timeForPickup)
                 {
-                    var treasure = hitInfo.transform.GetComponent<Treasure>();
-
-                    if (treasure != null)
-                    {
-                        if (_pickupTimer < timeForPickup)
-                        {
-                            _pickupTimer += updateTimeout;
-                            
-                            UpdatePercentage();
-                            
-                            return;
-                        }
-                        
-                        Treasure = treasure;
-                        pickedUpTreasure(treasure);
-                        treasure.Pickup(gameObject);
-
-                        _pickupTimer = 0;
-                        UpdatePercentage();
-                        return;   
-                    }
+                    PickUpTimer += updateInterval;
+                    return;
                 }
-            
-                if (_pickupTimer > 0)
-                {
-                    _pickupTimer -= updateTimeout * 2;
-                    
-                    UpdatePercentage();
-                    
-                }
+
+                Treasure = treasure;
+                pickedUpTreasure(treasure);
+                treasure.Pickup(gameObject);
+
+                PickUpTimer = 0;
+                return;
             }
-            
-            return;
         }
 
-        _updateTimeout += Time.deltaTime;
+        if (PickUpTimer > 0)
+        {
+            PickUpTimer -= updateInterval * 2;
+        }
+    }
+
+    private void DropTreasure()
+    {
+        droppedTreasure(Treasure);
+        Treasure.Drop();
+        Treasure = null;
     }
 }

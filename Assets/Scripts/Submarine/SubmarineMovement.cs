@@ -25,20 +25,20 @@ public class SubmarineMovement : MonoBehaviour
 
     public void Forward(int modify)
     {
-        _rigidbody.AddForce(modify * horizontalSpeed * Time.deltaTime * _transform.forward);
+        _rigidbody.AddForce(modify * horizontalSpeed * Time.fixedDeltaTime * _transform.forward);
     }
     
     public void Rotate(int modify)
     {
         _rigidbody.MoveRotation(_rigidbody.rotation * Quaternion.Euler(new Vector3(
             0,
-            modify* verticalSpeed * Time.deltaTime, 
+            modify* rotationSpeed * Time.fixedDeltaTime, 
             0
         )));
     }
     
     public void Raise(int modify)
     {
-        _rigidbody.AddForce(modify * rotationSpeed * Time.deltaTime * _transform.up);
+        _rigidbody.AddForce(modify * verticalSpeed * Time.fixedDeltaTime * _transform.up);
     }
 }

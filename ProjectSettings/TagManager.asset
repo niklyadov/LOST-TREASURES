@@ -6,6 +6,8 @@ TagManager:
   tags:
   - BlueBase
   - RedBase
+  - Global
+  - UI
   layers:
   - Default
   - TransparentFX
